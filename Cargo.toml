@@ -17,18 +17,21 @@ crossterm = "0.28"
 # Async runtime
 tokio = { version = "1", features = ["full"] }
 
-# CLI args (for non-TUI mode flags like --target, --output)
+# CLI args
 clap = { version = "4", features = ["derive"] }
 
-# Serialization (for saving session/results)
+# Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
-# Colors/styling in terminal output outside TUI
+# Colors/styling
 colored = "2"
 
-# Clipboard support (copy generated commands)
+# Clipboard
 arboard = "3"
+
+# Error handling
+anyhow = "1"
 
 [profile.release]
 opt-level = 3

