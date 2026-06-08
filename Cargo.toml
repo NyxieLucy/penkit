@@ -1,0 +1,36 @@
+[package]
+name = "penkit"
+version = "0.1.0"
+edition = "2021"
+description = "🗡️ penkit — a lazy hacker's swiss knife CLI"
+authors = ["nyxie"]
+
+[[bin]]
+name = "penkit"
+path = "src/main.rs"
+
+[dependencies]
+# TUI
+ratatui = "0.28"
+crossterm = "0.28"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# CLI args (for non-TUI mode flags like --target, --output)
+clap = { version = "4", features = ["derive"] }
+
+# Serialization (for saving session/results)
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Colors/styling in terminal output outside TUI
+colored = "2"
+
+# Clipboard support (copy generated commands)
+arboard = "3"
+
+[profile.release]
+opt-level = 3
+strip = true
+lto = true
