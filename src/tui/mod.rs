@@ -28,6 +28,32 @@ pub async fn run(
     loop {
         terminal.draw(|f| ui::render(f, &mut app))?;
 
+        if app.wants_doctor {
+            disable_raw_mode()?;
+            execute!(
+                terminal.backend_mut(),
+                LeaveAlternateScreen,
+                DisableMouseCapture
+            )?;
+            terminal.show_cursor()?;
+
+            let report = crate::doctor::run_check();
+            crate::doctor::print_report(&report);
+
+            println!("\x1b[1;33mPress Enter to return to penkit...\x1b[0m");
+            let mut dummy = String::new();
+            std::io::stdin().read_line(&mut dummy)?;
+
+            enable_raw_mode()?;
+            let mut stdout = io::stdout();
+            execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+            let backend = CrosstermBackend::new(stdout);
+            terminal = Terminal::new(backend)?;
+
+            app.wants_doctor = false;
+            continue;
+        }
+
         if app.wants_run {
             if let Some(ref cmd) = app.final_command {
                 let exec_cmd = if app.sudo_mode {
@@ -36,7 +62,6 @@ pub async fn run(
                     cmd.to_string()
                 };
 
-                // Drop back to the real terminal so the user can see live output
                 disable_raw_mode()?;
                 execute!(
                     terminal.backend_mut(),
@@ -68,7 +93,6 @@ pub async fn run(
                 let mut dummy = String::new();
                 std::io::stdin().read_line(&mut dummy)?;
 
-                // Re-enter TUI
                 enable_raw_mode()?;
                 let mut stdout = io::stdout();
                 execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -76,7 +100,7 @@ pub async fn run(
                 terminal = Terminal::new(backend)?;
             }
             app.wants_run = false;
-            app.sudo_mode = false; // reset after run
+            app.sudo_mode = false;
             continue;
         }
 
@@ -87,7 +111,6 @@ pub async fn run(
         }
     }
 
-    // Restore terminal on quit
     disable_raw_mode()?;
     execute!(
         terminal.backend_mut(),

@@ -1,4 +1,5 @@
 mod commands;
+mod doctor;
 mod modules;
 mod tui;
 
@@ -8,11 +9,11 @@ use colored::*;
 #[derive(Parser)]
 #[command(
     name = "penkit",
-    about = "🗡️  penkit — lazy hacker's swiss knife",
+    about = "🗡️ penkit — lazy hacker's swiss knife",
     version = "0.1.0"
 )]
 struct Cli {
-    /// Jump straight to a module (recon|web|smb|sqli|shells|cve)
+    /// Jump straight to a module (recon|web|smb|sqli|shells|cve|hydra|post|crypto)
     #[arg(short, long)]
     module: Option<String>,
 
@@ -23,11 +24,21 @@ struct Cli {
     /// Output file for generated commands
     #[arg(short, long)]
     output: Option<String>,
+
+    /// Check which pentest tools are installed
+    #[arg(long)]
+    doctor: bool,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
+
+    if cli.doctor {
+        let report = doctor::run_check();
+        doctor::print_report(&report);
+        return Ok(());
+    }
 
     print_banner();
 
@@ -51,7 +62,7 @@ fn print_banner() {
         .bold()
     );
     println!(
-        "  {} {}\n",
+        " {} {}\n",
         "lazy hacker's swiss knife".bright_cyan(),
         "v0.1.0".dimmed()
     );

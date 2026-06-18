@@ -31,6 +31,9 @@ pub fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         KeyCode::Char('s') | KeyCode::Char('S') => {
             app.sudo_mode = !app.sudo_mode;
         }
+        KeyCode::Char('d') | KeyCode::Char('D') => {
+            app.wants_doctor = true;
+        }
         _ => {}
     }
     false
