@@ -1,3 +1,16 @@
 /target
 target
 target/
+
+# Hydra session/restore files
+hydra.restore
+*.restore
+hydra.session
+
+# Other pentest artifacts that shouldn't be committed
+*.log
+nmap_*.xml
+*.pcap
+*.cap
+results/
+loot/
