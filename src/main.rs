@@ -9,23 +9,23 @@ use colored::*;
 #[derive(Parser)]
 #[command(
     name = "penkit",
-    about = "🗡️ penkit — lazy hacker's swiss knife",
+    about = "(｡•̀ᴗ-)✧ penkit : lazy hacker's swiss knife",
     version = "0.1.0"
 )]
 struct Cli {
-    /// Jump straight to a module (recon|web|smb|sqli|shells|cve|hydra|post|crypto)
+    // Jump straight to a module (recon|web|smb|sqli|shells|cve|hydra|post|crypto|msf)
     #[arg(short, long)]
     module: Option<String>,
 
-    /// Target host/IP (pre-fills prompts)
+    // Target host/IP (pre-fills prompts)
     #[arg(short, long)]
     target: Option<String>,
 
-    /// Output file for generated commands
+    // Output file for generated commands
     #[arg(short, long)]
     output: Option<String>,
 
-    /// Check which pentest tools are installed
+    // Check which pentest tools are installed
     #[arg(long)]
     doctor: bool,
 }

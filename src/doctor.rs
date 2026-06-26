@@ -62,6 +62,8 @@ pub fn run_check() -> Vec<ToolCheck> {
         ToolCheck { name: "pspy64", description: "Process monitor (no root)", category: "Post", installed: check("pspy64") },
         // Dev
         ToolCheck { name: "go", description: "Go compiler (for building tools)", category: "Dev", installed: check("go") },
+        ToolCheck { name: "msfconsole", description: "Metasploit console", category: "Metasploit", installed: check("msfconsole") },
+ToolCheck { name: "msfvenom", description: "Metasploit payload generator", category: "Metasploit", installed: check("msfvenom") },
     ]
 }
 
